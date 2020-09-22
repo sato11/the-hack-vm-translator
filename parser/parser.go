@@ -42,3 +42,52 @@ func (p *Parser) Advance() {
 	p.currentCommand = p.lines[0]
 	p.lines = p.lines[1:]
 }
+
+// CommandTypes represent the return value for func CommandType()
+type CommandTypes int
+
+const (
+	// ArithmeticCommand represents arithmetic or logical operation.
+	ArithmeticCommand CommandTypes = iota
+	// PushCommand represents push command.
+	PushCommand
+	// PopCommand represents pop command.
+	PopCommand
+	// LabelCommand represents label command.
+	LabelCommand
+	// GotoCommand represents goto command.
+	GotoCommand
+	// IfCommand represents if-goto command.
+	IfCommand
+	// FunctionCommand represents function command.
+	FunctionCommand
+	// ReturnCommand represents return command.
+	ReturnCommand
+	// CallCommand represents call command.
+	CallCommand
+)
+
+// CommandType returns the type of the current VM command.
+// Arithmetic is returned for all the arithmetic commands.
+func (p *Parser) CommandType() CommandTypes {
+	switch strings.Split(p.currentCommand, " ")[0] {
+	case "push":
+		return PushCommand
+	case "pop":
+		return PopCommand
+	case "label":
+		return LabelCommand
+	case "goto":
+		return GotoCommand
+	case "if-goto":
+		return IfCommand
+	case "function":
+		return FunctionCommand
+	case "call":
+		return CallCommand
+	case "return":
+		return ReturnCommand
+	default:
+		return ArithmeticCommand
+	}
+}

@@ -84,3 +84,30 @@ func TestAdvance(t *testing.T) {
 		}
 	}
 }
+
+type commandTypeTest struct {
+	command string
+	out     CommandTypes
+}
+
+func TestCommandType(t *testing.T) {
+	tests := []commandTypeTest{
+		{"push constant 0", PushCommand},
+		{"pop location 1", PopCommand},
+		{"label loop", LabelCommand},
+		{"goto loop", GotoCommand},
+		{"if-goto end", IfCommand},
+		{"function mult 2", FunctionCommand},
+		{"call mult 2 5", CallCommand},
+		{"return", ReturnCommand},
+		{"add", ArithmeticCommand},
+		{"sub", ArithmeticCommand},
+		{"lt", ArithmeticCommand},
+	}
+	for i, test := range tests {
+		p := &Parser{test.command, []string{}}
+		if p.CommandType() != test.out {
+			t.Errorf("#%d: got: %v wanted: %v", i, p.CommandType(), test.out)
+		}
+	}
+}
