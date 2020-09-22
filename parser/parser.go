@@ -91,3 +91,19 @@ func (p *Parser) CommandType() CommandTypes {
 		return ArithmeticCommand
 	}
 }
+
+// Arg1 returns the first argument of the current command.
+// In the case of ArithmeticCommand, the command itself (add, sub, etc.) is returned.
+// Should not be called if the current command is ReturnCommand.
+func (p *Parser) Arg1() string {
+	if p.CommandType() == ArithmeticCommand {
+		return p.currentCommand
+	}
+	return strings.Split(p.currentCommand, " ")[1]
+}
+
+// Arg2 returns the second argument of the current command.
+// Should be called only if the current command is PushCommand, PopCommand, FunctionCommand or CallCommand.
+func (p *Parser) Arg2() string {
+	return strings.Split(p.currentCommand, " ")[2]
+}

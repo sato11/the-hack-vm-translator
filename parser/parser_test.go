@@ -111,3 +111,44 @@ func TestCommandType(t *testing.T) {
 		}
 	}
 }
+
+type argTest struct {
+	command string
+	out     string
+}
+
+func TestArg1(t *testing.T) {
+	tests := []argTest{
+		{"push constant 0", "constant"},
+		{"pop location 1", "location"},
+		{"label loop", "loop"},
+		{"goto loop", "loop"},
+		{"if-goto end", "end"},
+		{"function mult 2", "mult"},
+		{"call mult 2 5", "mult"},
+		{"add", "add"},
+		{"sub", "sub"},
+		{"lt", "lt"},
+	}
+	for i, test := range tests {
+		p := &Parser{test.command, []string{}}
+		if p.Arg1() != test.out {
+			t.Errorf("#%d: got: %v wanted %v", i, p.Arg1(), test.out)
+		}
+	}
+}
+
+func TestArg2(t *testing.T) {
+	tests := []argTest{
+		{"push constant 0", "0"},
+		{"pop location 1", "1"},
+		{"function mult 2", "2"},
+		{"call mult 2 5", "2"},
+	}
+	for i, test := range tests {
+		p := &Parser{test.command, []string{}}
+		if p.Arg2() != test.out {
+			t.Errorf("#%d: got: %v wanted %v", i, p.Arg2(), test.out)
+		}
+	}
+}
