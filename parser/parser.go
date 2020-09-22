@@ -30,3 +30,8 @@ func New(r io.Reader) *Parser {
 		lines,
 	}
 }
+
+// HasMoreCommands returns true if there are more commands to parse.
+func (p *Parser) HasMoreCommands() bool {
+	return len(p.lines) != 0
+}

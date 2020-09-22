@@ -34,3 +34,22 @@ func TestNew(t *testing.T) {
 		}
 	}
 }
+
+type hasMoreCommandsTest struct {
+	lines []string
+	out   bool
+}
+
+func TestHasMoreCommands(t *testing.T) {
+	tests := []hasMoreCommandsTest{
+		{[]string{}, false},
+		{[]string{"push constant 0"}, true},
+		{[]string{"push constant 0", "pop local 0"}, true},
+	}
+	for i, test := range tests {
+		p := &Parser{"", test.lines}
+		if p.HasMoreCommands() != test.out {
+			t.Errorf("#%d: got: %v wanted: %v", i, p.HasMoreCommands(), test.out)
+		}
+	}
+}
