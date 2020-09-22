@@ -53,3 +53,34 @@ func TestHasMoreCommands(t *testing.T) {
 		}
 	}
 }
+
+type advanceTest struct {
+	before  []string
+	after   []string
+	command string
+}
+
+func TestAdvance(t *testing.T) {
+	tests := []advanceTest{
+		{[]string{"push constant 0"}, []string{}, "push constant 0"},
+		{[]string{"push constant 0", "pop local 0"}, []string{"pop local 0"}, "push constant 0"},
+	}
+	for i, test := range tests {
+		p := &Parser{"", test.before}
+		p.Advance()
+
+		if p.currentCommand != test.command {
+			t.Errorf("#%d: got: %v wanted: %v", i, p.currentCommand, test.command)
+		}
+
+		if len(p.lines) != len(test.after) {
+			t.Errorf("#%d: got: %v wanted: %v", i, p.lines, test.after)
+		} else {
+			for j := range p.lines {
+				if p.lines[j] != test.after[j] {
+					t.Errorf("#%d: got: %v wanted: %v", j, p.lines[j], test.after[j])
+				}
+			}
+		}
+	}
+}

@@ -35,3 +35,10 @@ func New(r io.Reader) *Parser {
 func (p *Parser) HasMoreCommands() bool {
 	return len(p.lines) != 0
 }
+
+// Advance reads the next command from the input and makes it the current command.
+// Should be called only if HasMoreCommands() is true.
+func (p *Parser) Advance() {
+	p.currentCommand = p.lines[0]
+	p.lines = p.lines[1:]
+}
