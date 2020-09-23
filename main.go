@@ -2,11 +2,13 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 
 	"github.com/sato11/the-hack-vm-translator/codewriter"
+	"github.com/sato11/the-hack-vm-translator/parser"
 )
 
 // ExitCodeOK and ExitCodeError represent respectively a status code.
@@ -21,12 +23,21 @@ func translateFile(path string, w *codewriter.CodeWriter) error {
 		return err
 	}
 
-	b, err := ioutil.ReadAll(f)
-	if err != nil {
-		return err
+	p := parser.New(f)
+	for p.HasMoreCommands() {
+		p.Advance()
+		switch p.CommandType() {
+		case parser.ArithmeticCommand:
+			w.WriteArithmetic(p.Command())
+		case parser.PushCommand, parser.PopCommand:
+			index, err := strconv.Atoi(p.Arg2())
+			if err != nil {
+				return err
+			}
+			w.WritePushPop(parser.PushCommand, p.Arg1(), index)
+		}
 	}
 
-	fmt.Printf(string(b))
 	return nil
 }
 
@@ -35,9 +46,11 @@ func translateFile(path string, w *codewriter.CodeWriter) error {
 func main() {
 	path := os.Args[1]
 	codewriter := codewriter.New()
-	codewriter.SetFileName(fmt.Sprintf("%s.asm", filepath.Base(path)))
 
-	if filepath.Ext(path) == ".vm" {
+	extension := filepath.Ext(path)
+	codewriter.SetFileName(fmt.Sprintf("%s.asm", strings.TrimSuffix(path, extension)))
+
+	if extension == ".vm" {
 		err := translateFile(path, codewriter)
 		if err != nil {
 			fmt.Println(err.Error())
@@ -59,5 +72,6 @@ func main() {
 		}
 	}
 
+	codewriter.Save()
 	os.Exit(ExitCodeOK)
 }
