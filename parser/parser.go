@@ -70,7 +70,7 @@ const (
 // CommandType returns the type of the current VM command.
 // Arithmetic is returned for all the arithmetic commands.
 func (p *Parser) CommandType() CommandTypes {
-	switch strings.Split(p.currentCommand, " ")[0] {
+	switch p.Command() {
 	case "push":
 		return PushCommand
 	case "pop":
@@ -90,6 +90,11 @@ func (p *Parser) CommandType() CommandTypes {
 	default:
 		return ArithmeticCommand
 	}
+}
+
+// Command returns
+func (p *Parser) Command() string {
+	return strings.Split(p.currentCommand, " ")[0]
 }
 
 // Arg1 returns the first argument of the current command.
