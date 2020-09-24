@@ -160,11 +160,15 @@ func (c *CodeWriter) WriteArithmetic(command string) {
 func (c *CodeWriter) WritePushPop(command parser.CommandTypes, segment string, index int) {
 	code := ""
 
+	switch segment {
+	case "constant":
+		code += fmt.Sprintf("@%d\n", index) +
+			"D=A\n"
+	}
+
 	switch command {
 	case parser.PushCommand:
-		code = fmt.Sprintf("@%d\n", index) +
-			"D=A\n" +
-			"@SP\n" +
+		code += "@SP\n" +
 			"A=M\n" +
 			"M=D\n" +
 			"@SP\n" +
