@@ -155,24 +155,201 @@ func (c *CodeWriter) WriteArithmetic(command string) {
 	c.writer.WriteString(code)
 }
 
-// WritePushPop writes the assembly code that is the translation of the given command,
-// where command is either PushCommand or PopCommand.
-func (c *CodeWriter) WritePushPop(command parser.CommandTypes, segment string, index int) {
-	code := ""
-
+func handlePushCommand(segment string, index int) string {
 	switch segment {
 	case "constant":
-		code += fmt.Sprintf("@%d\n", index) +
-			"D=A\n"
-	}
-
-	switch command {
-	case parser.PushCommand:
-		code += "@SP\n" +
+		return fmt.Sprintf("@%d\n", index) +
+			"D=A\n" +
+			"@SP\n" +
 			"A=M\n" +
 			"M=D\n" +
 			"@SP\n" +
 			"M=M+1\n"
+
+	case "local":
+		code := "@LCL\n" +
+			"A=M\n"
+
+		for i := 0; i < index; i++ {
+			code += "A=A+1\n"
+		}
+
+		code += "D=M\n" +
+			"@SP\n" +
+			"A=M\n" +
+			"M=D\n" +
+			"@SP\n" +
+			"M=M+1\n"
+
+		return code
+
+	case "argument":
+		code := "@ARG\n" +
+			"A=M\n"
+
+		for i := 0; i < index; i++ {
+			code += "A=A+1\n"
+		}
+
+		code += "D=M\n" +
+			"@SP\n" +
+			"A=M\n" +
+			"M=D\n" +
+			"@SP\n" +
+			"M=M+1\n"
+
+		return code
+
+	case "this":
+		code := "@THIS\n" +
+			"A=M\n"
+
+		for i := 0; i < index; i++ {
+			code += "A=A+1\n"
+		}
+
+		code += "D=M\n" +
+			"@SP\n" +
+			"A=M\n" +
+			"M=D\n" +
+			"@SP\n" +
+			"M=M+1\n"
+
+		return code
+
+	case "that":
+		code := "@THAT\n" +
+			"A=M\n"
+
+		for i := 0; i < index; i++ {
+			code += "A=A+1\n"
+		}
+
+		code += "D=M\n" +
+			"@SP\n" +
+			"A=M\n" +
+			"M=D\n" +
+			"@SP\n" +
+			"M=M+1\n"
+
+		return code
+
+	case "temp":
+		code := "@R5\n"
+
+		for i := 0; i < index; i++ {
+			code += "A=A+1\n"
+		}
+
+		code += "D=M\n" +
+			"@SP\n" +
+			"A=M\n" +
+			"M=D\n" +
+			"@SP\n" +
+			"M=M+1\n"
+
+		return code
+
+	default:
+		return ""
+	}
+}
+
+func handlePopCommand(segment string, index int) string {
+	switch segment {
+	case "local":
+		code := "@SP\n" +
+			"M=M-1\n" +
+			"A=M\n" +
+			"D=M\n" +
+			"@LCL\n" +
+			"A=M\n"
+
+		for i := 0; i < index; i++ {
+			code += "A=A+1\n"
+		}
+
+		code += "M=D\n"
+
+		return code
+	case "argument":
+		code := "@SP\n" +
+			"M=M-1\n" +
+			"A=M\n" +
+			"D=M\n" +
+			"@ARG\n" +
+			"A=M\n"
+
+		for i := 0; i < index; i++ {
+			code += "A=A+1\n"
+		}
+
+		code += "M=D\n"
+
+		return code
+
+	case "this":
+		code := "@SP\n" +
+			"M=M-1\n" +
+			"A=M\n" +
+			"D=M\n" +
+			"@THIS\n" +
+			"A=M\n"
+
+		for i := 0; i < index; i++ {
+			code += "A=A+1\n"
+		}
+
+		code += "M=D\n"
+
+		return code
+
+	case "that":
+		code := "@SP\n" +
+			"M=M-1\n" +
+			"A=M\n" +
+			"D=M\n" +
+			"@THAT\n" +
+			"A=M\n"
+
+		for i := 0; i < index; i++ {
+			code += "A=A+1\n"
+		}
+
+		code += "M=D\n"
+
+		return code
+
+	case "temp":
+		code := "@SP\n" +
+			"M=M-1\n" +
+			"A=M\n" +
+			"D=M\n" +
+			"@R5\n"
+
+		for i := 0; i < index; i++ {
+			code += "A=A+1\n"
+		}
+
+		code += "M=D\n"
+
+		return code
+
+	default:
+		return ""
+	}
+}
+
+// WritePushPop writes the assembly code that is the translation of the given command,
+// where command is either PushCommand or PopCommand.
+func (c *CodeWriter) WritePushPop(command parser.CommandTypes, segment string, index int) {
+	var code string
+
+	switch command {
+	case parser.PushCommand:
+		code = handlePushCommand(segment, index)
+	case parser.PopCommand:
+		code = handlePopCommand(segment, index)
 	default:
 		panic(errors.New("codewriter.WritePushPop only accepts PushCommand and PopCommand"))
 	}

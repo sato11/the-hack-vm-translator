@@ -34,7 +34,7 @@ func translateFile(path string, w *codewriter.CodeWriter) error {
 			if err != nil {
 				return err
 			}
-			w.WritePushPop(parser.PushCommand, p.Arg1(), index)
+			w.WritePushPop(p.CommandType(), p.Arg1(), index)
 		}
 	}
 
