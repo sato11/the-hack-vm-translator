@@ -62,7 +62,7 @@ func unaryCommandOperator(command string) string {
 	}
 }
 
-func (c *CodeWriter) getIndex(command string) int {
+func (c CodeWriter) getIndex(command string) int {
 	switch command {
 	case "eq":
 		return c.eqIndex
@@ -155,7 +155,7 @@ func (c *CodeWriter) WriteArithmetic(command string) {
 	c.writer.WriteString(code)
 }
 
-func handlePushCommand(segment string, index int) string {
+func (c CodeWriter) handlePushCommand(segment string, index int) string {
 	switch segment {
 	case "constant":
 		return fmt.Sprintf("@%d\n", index) +
@@ -273,7 +273,7 @@ func handlePushCommand(segment string, index int) string {
 	}
 }
 
-func handlePopCommand(segment string, index int) string {
+func (c CodeWriter) handlePopCommand(segment string, index int) string {
 	switch segment {
 	case "local":
 		code := "@SP\n" +
@@ -380,9 +380,9 @@ func (c *CodeWriter) WritePushPop(command parser.CommandTypes, segment string, i
 
 	switch command {
 	case parser.PushCommand:
-		code = handlePushCommand(segment, index)
+		code = c.handlePushCommand(segment, index)
 	case parser.PopCommand:
-		code = handlePopCommand(segment, index)
+		code = c.handlePopCommand(segment, index)
 	default:
 		panic(errors.New("codewriter.WritePushPop only accepts PushCommand and PopCommand"))
 	}
