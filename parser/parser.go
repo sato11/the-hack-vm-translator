@@ -19,7 +19,7 @@ func New(r io.Reader) *Parser {
 	for scanner.Scan() {
 		line := scanner.Text()
 		line = strings.Split(line, "//")[0] // remove comments
-		line = strings.Trim(line, " ")      // remove whitespaces
+		line = strings.Trim(line, " \t")    // remove whitespaces
 		if line != "" {
 			lines = append(lines, line)
 		}
