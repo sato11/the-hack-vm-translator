@@ -65,6 +65,7 @@ func TestWritePushPop(t *testing.T) {
 		{parser.PushCommand, "temp", 1, "@R5\nA=A+1\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"},
 		{parser.PushCommand, "pointer", 0, "@THIS\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"},
 		{parser.PushCommand, "pointer", 1, "@THAT\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"},
+		{parser.PushCommand, "static", 1, "@filename.1\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"},
 		{parser.PopCommand, "local", 1, "@SP\nM=M-1\nA=M\nD=M\n@LCL\nA=M\nA=A+1\nM=D\n"},
 		{parser.PopCommand, "argument", 1, "@SP\nM=M-1\nA=M\nD=M\n@ARG\nA=M\nA=A+1\nM=D\n"},
 		{parser.PopCommand, "this", 1, "@SP\nM=M-1\nA=M\nD=M\n@THIS\nA=M\nA=A+1\nM=D\n"},
@@ -72,10 +73,12 @@ func TestWritePushPop(t *testing.T) {
 		{parser.PopCommand, "temp", 1, "@SP\nM=M-1\nA=M\nD=M\n@R5\nA=A+1\nM=D\n"},
 		{parser.PopCommand, "pointer", 0, "@SP\nM=M-1\nA=M\nD=M\n@THIS\nM=D\n"},
 		{parser.PopCommand, "pointer", 1, "@SP\nM=M-1\nA=M\nD=M\n@THAT\nM=D\n"},
+		{parser.PopCommand, "static", 1, "@SP\nM=M-1\nA=M\nD=M\n@filename.1\nM=D\n"},
 	}
 
 	for i, test := range tests {
 		c := New()
+		c.SetFileName("filename")
 		c.WritePushPop(test.commandType, test.segment, test.index)
 		if c.writer.String() != test.out {
 			t.Errorf("#%d: got: %v wanted: %v", i, c.writer.String(), test.out)

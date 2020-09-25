@@ -268,6 +268,15 @@ func (c CodeWriter) handlePushCommand(segment string, index int) string {
 
 		return code
 
+	case "static":
+		return fmt.Sprintf("@%s.%d\n", c.filename, index) +
+			"D=M\n" +
+			"@SP\n" +
+			"A=M\n" +
+			"M=D\n" +
+			"@SP\n" +
+			"M=M+1\n"
+
 	default:
 		return ""
 	}
@@ -368,6 +377,15 @@ func (c CodeWriter) handlePopCommand(segment string, index int) string {
 		code += "M=D\n"
 
 		return code
+
+	case "static":
+		return "@SP\n" +
+			"M=M-1\n" +
+			"A=M\n" +
+			"D=M\n" +
+			fmt.Sprintf("@%s.%d\n", c.filename, index) +
+			"M=D\n"
+
 	default:
 		return ""
 	}
