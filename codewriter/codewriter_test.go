@@ -21,6 +21,20 @@ func TestSetFileName(t *testing.T) {
 	}
 }
 
+func TestSetFunctionName(t *testing.T) {
+	functions := []string{
+		"power",
+		"sqrt",
+	}
+	for i, functionName := range functions {
+		c := New()
+		c.SetFunctionName(functionName)
+		if c.functionName != functionName {
+			t.Errorf("#%d: got: %v wanted: %v", i, c.functionName, functionName)
+		}
+	}
+}
+
 type writeArithmeticTest struct {
 	command string
 	out     string
@@ -80,6 +94,60 @@ func TestWritePushPop(t *testing.T) {
 		c := New()
 		c.SetFileName("filename")
 		c.WritePushPop(test.commandType, test.segment, test.index)
+		if c.writer.String() != test.out {
+			t.Errorf("#%d: got: %v wanted: %v", i, c.writer.String(), test.out)
+		}
+	}
+}
+
+type labelTest struct {
+	functionName string
+	label        string
+	out          string
+}
+
+func TestWriteLabel(t *testing.T) {
+	tests := []labelTest{
+		{"power", "LOOP", "(power$LOOP)\n"},
+		{"sqrt", "LABEL", "(sqrt$LABEL)\n"},
+	}
+
+	for i, test := range tests {
+		c := New()
+		c.SetFunctionName(test.functionName)
+		c.WriteLabel(test.label)
+		if c.writer.String() != test.out {
+			t.Errorf("#%d: got: %v wanted: %v", i, c.writer.String(), test.out)
+		}
+	}
+}
+
+func TestWriteGoto(t *testing.T) {
+	tests := []labelTest{
+		{"power", "LOOP", "@power$LOOP\n0;JMP\n"},
+		{"sqrt", "LABEL", "@sqrt$LABEL\n0;JMP\n"},
+	}
+
+	for i, test := range tests {
+		c := New()
+		c.SetFunctionName(test.functionName)
+		c.WriteGoto(test.label)
+		if c.writer.String() != test.out {
+			t.Errorf("#%d: got: %v wanted: %v", i, c.writer.String(), test.out)
+		}
+	}
+}
+
+func TestWriteIf(t *testing.T) {
+	tests := []labelTest{
+		{"power", "LOOP", "@SP\nM=M-1\nA=M\nD=M\n@power$LOOP\nD;JNE\n"},
+		{"sqrt", "LABEL", "@SP\nM=M-1\nA=M\nD=M\n@sqrt$LABEL\nD;JNE\n"},
+	}
+
+	for i, test := range tests {
+		c := New()
+		c.SetFunctionName(test.functionName)
+		c.WriteIf(test.label)
 		if c.writer.String() != test.out {
 			t.Errorf("#%d: got: %v wanted: %v", i, c.writer.String(), test.out)
 		}

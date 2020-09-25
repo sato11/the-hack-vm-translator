@@ -35,6 +35,12 @@ func translateFile(path string, w *codewriter.CodeWriter) error {
 				return err
 			}
 			w.WritePushPop(p.CommandType(), p.Arg1(), index)
+		case parser.LabelCommand:
+			w.WriteLabel(p.Arg1())
+		case parser.GotoCommand:
+			w.WriteGoto(p.Arg1())
+		case parser.IfCommand:
+			w.WriteIf(p.Arg1())
 		}
 	}
 

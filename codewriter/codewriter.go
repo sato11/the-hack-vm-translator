@@ -12,17 +12,19 @@ import (
 
 // CodeWriter translates VM commands into Hack assembly code.
 type CodeWriter struct {
-	filename string
-	eqIndex  int
-	gtIndex  int
-	ltIndex  int
-	writer   *bytes.Buffer
+	filename     string
+	functionName string
+	eqIndex      int
+	gtIndex      int
+	ltIndex      int
+	writer       *bytes.Buffer
 }
 
 // New opens file in write mode to write translations into.
 func New() *CodeWriter {
 	var buffer bytes.Buffer
 	return &CodeWriter{
+		"",
 		"",
 		0,
 		0,
@@ -34,6 +36,11 @@ func New() *CodeWriter {
 // SetFileName informs the code writer that the translation is started.
 func (c *CodeWriter) SetFileName(filename string) {
 	c.filename = filename
+}
+
+// SetFunctionName informs the code writer that the translation is started.
+func (c *CodeWriter) SetFunctionName(functionName string) {
+	c.functionName = functionName
 }
 
 func binaryCommandOperator(command string) string {
@@ -404,6 +411,33 @@ func (c *CodeWriter) WritePushPop(command parser.CommandTypes, segment string, i
 	default:
 		panic(errors.New("codewriter.WritePushPop only accepts PushCommand and PopCommand"))
 	}
+
+	c.writer.WriteString(code)
+}
+
+// WriteLabel writes assembly code that effects the label command.
+func (c *CodeWriter) WriteLabel(label string) {
+	code := fmt.Sprintf("(%s$%s)\n", c.functionName, label)
+
+	c.writer.WriteString(code)
+}
+
+// WriteGoto writes assembly code that effects the goto command.
+func (c *CodeWriter) WriteGoto(label string) {
+	code := fmt.Sprintf("@%s$%s\n", c.functionName, label) +
+		"0;JMP\n"
+
+	c.writer.WriteString(code)
+}
+
+// WriteIf writes assembly code that effects the if-goto command.
+func (c *CodeWriter) WriteIf(label string) {
+	code := "@SP\n" +
+		"M=M-1\n" +
+		"A=M\n" +
+		"D=M\n" +
+		fmt.Sprintf("@%s$%s\n", c.functionName, label) +
+		"D;JNE\n"
 
 	c.writer.WriteString(code)
 }
