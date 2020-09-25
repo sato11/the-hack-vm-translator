@@ -250,6 +250,24 @@ func handlePushCommand(segment string, index int) string {
 
 		return code
 
+	case "pointer":
+		var code string
+
+		if index == 0 {
+			code = "@THIS\n"
+		} else {
+			code = "@THAT\n"
+		}
+
+		code += "D=M\n" +
+			"@SP\n" +
+			"A=M\n" +
+			"M=D\n" +
+			"@SP\n" +
+			"M=M+1\n"
+
+		return code
+
 	default:
 		return ""
 	}
@@ -335,6 +353,21 @@ func handlePopCommand(segment string, index int) string {
 
 		return code
 
+	case "pointer":
+		code := "@SP\n" +
+			"M=M-1\n" +
+			"A=M\n" +
+			"D=M\n"
+
+		if index == 0 {
+			code += "@THIS\n"
+		} else {
+			code += "@THAT\n"
+		}
+
+		code += "M=D\n"
+
+		return code
 	default:
 		return ""
 	}
