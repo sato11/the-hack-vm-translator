@@ -14,6 +14,7 @@ import (
 type CodeWriter struct {
 	filename     string
 	functionName string
+	callIndices  map[string]int
 	eqIndex      int
 	gtIndex      int
 	ltIndex      int
@@ -26,11 +27,23 @@ func New() *CodeWriter {
 	return &CodeWriter{
 		"",
 		"",
+		make(map[string]int),
 		0,
 		0,
 		0,
 		&buffer,
 	}
+}
+
+// Setup provides bootstrap codes for codewriter.
+func (c *CodeWriter) Setup() {
+	initializeSP := "@256\n" +
+		"D=A\n" +
+		"@SP\n" +
+		"M=D\n"
+
+	c.writer.WriteString(initializeSP)
+	c.WriteCall("Sys.init", 0)
 }
 
 // SetFileName informs the code writer that the translation is started.
@@ -438,6 +451,80 @@ func (c *CodeWriter) WriteIf(label string) {
 		"D=M\n" +
 		fmt.Sprintf("@%s$%s\n", c.functionName, label) +
 		"D;JNE\n"
+
+	c.writer.WriteString(code)
+}
+
+// WriteCall writes assembly code that effects the call command.
+func (c *CodeWriter) WriteCall(functionName string, numArgs int) {
+	returnAddressLabel := fmt.Sprintf("%s.return.%d", functionName, c.callIndices[functionName])
+	c.callIndices[functionName]++
+
+	// push return-address
+	code := fmt.Sprintf("@%s\n", returnAddressLabel) +
+		"D=A\n" +
+		"@SP\n" +
+		"A=M\n" +
+		"M=D\n" +
+		"@SP\n" +
+		"M=M+1\n"
+
+	// push LCL
+	code += "@LCL\n" +
+		"D=M\n" +
+		"@SP\n" +
+		"A=M\n" +
+		"M=D\n" +
+		"@SP\n" +
+		"M=M+1\n"
+
+	// push ARG
+	code += "@ARG\n" +
+		"D=M\n" +
+		"@SP\n" +
+		"A=M\n" +
+		"M=D\n" +
+		"@SP\n" +
+		"M=M+1\n"
+
+	// push THIS
+	code += "@THIS\n" +
+		"D=M\n" +
+		"@SP\n" +
+		"A=M\n" +
+		"M=D\n" +
+		"@SP\n" +
+		"M=M+1\n"
+
+	// push THAT
+	code += "@THAT\n" +
+		"D=M\n" +
+		"@SP\n" +
+		"A=M\n" +
+		"M=D\n" +
+		"@SP\n" +
+		"M=M+1\n"
+
+	// ARG = SP-n-5
+	code += fmt.Sprintf("@%d\n", numArgs+5) +
+		"D=A\n" +
+		"@SP\n" +
+		"D=M-D\n" +
+		"@ARG\n" +
+		"M=D\n"
+
+	// LCL = SP
+	code += "@SP\n" +
+		"D=M\n" +
+		"@LCL\n" +
+		"M=D\n"
+
+	// goto f
+	code += fmt.Sprintf("@%s\n", functionName) +
+		"0;JMP\n"
+
+	// (return-address)
+	code += fmt.Sprintf("(%s)\n", returnAddressLabel)
 
 	c.writer.WriteString(code)
 }

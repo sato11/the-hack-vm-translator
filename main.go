@@ -41,6 +41,12 @@ func translateFile(path string, w *codewriter.CodeWriter) error {
 			w.WriteGoto(p.Arg1())
 		case parser.IfCommand:
 			w.WriteIf(p.Arg1())
+		case parser.CallCommand:
+			numArgs, err := strconv.Atoi(p.Arg2())
+			if err != nil {
+				return err
+			}
+			w.WriteCall(p.Arg1(), numArgs)
 		case parser.ReturnCommand:
 			w.WriteReturn()
 		case parser.FunctionCommand:
@@ -60,6 +66,7 @@ func translateFile(path string, w *codewriter.CodeWriter) error {
 func main() {
 	path := os.Args[1]
 	codewriter := codewriter.New()
+	codewriter.Setup()
 
 	extension := filepath.Ext(path)
 
