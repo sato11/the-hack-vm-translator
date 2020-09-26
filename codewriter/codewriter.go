@@ -14,6 +14,7 @@ import (
 type CodeWriter struct {
 	filename     string
 	functionName string
+	namespace    string
 	callIndices  map[string]int
 	eqIndex      int
 	gtIndex      int
@@ -25,6 +26,7 @@ type CodeWriter struct {
 func New() *CodeWriter {
 	var buffer bytes.Buffer
 	return &CodeWriter{
+		"",
 		"",
 		"",
 		make(map[string]int),
@@ -51,9 +53,14 @@ func (c *CodeWriter) SetFileName(filename string) {
 	c.filename = filename
 }
 
-// SetFunctionName informs the code writer that the translation is started.
+// SetFunctionName informs which function the codewriter is dealing with.
 func (c *CodeWriter) SetFunctionName(functionName string) {
 	c.functionName = functionName
+}
+
+// SetNamespace informs which individual .vm file the codewriter is dealing with.
+func (c *CodeWriter) SetNamespace(namespace string) {
+	c.namespace = namespace
 }
 
 func binaryCommandOperator(command string) string {
@@ -289,7 +296,7 @@ func (c CodeWriter) handlePushCommand(segment string, index int) string {
 		return code
 
 	case "static":
-		return fmt.Sprintf("@%s.%d\n", c.filename, index) +
+		return fmt.Sprintf("@%s.%d\n", c.namespace, index) +
 			"D=M\n" +
 			"@SP\n" +
 			"A=M\n" +
@@ -403,7 +410,7 @@ func (c CodeWriter) handlePopCommand(segment string, index int) string {
 			"M=M-1\n" +
 			"A=M\n" +
 			"D=M\n" +
-			fmt.Sprintf("@%s.%d\n", c.filename, index) +
+			fmt.Sprintf("@%s.%d\n", c.namespace, index) +
 			"M=D\n"
 
 	default:

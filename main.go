@@ -82,6 +82,7 @@ func main() {
 		codewriter.SetFileName(filename)
 		err := filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
 			if filepath.Ext(path) == ".vm" {
+				codewriter.SetNamespace(strings.TrimSuffix(filepath.Base(path), ".vm"))
 				err := translateFile(path, codewriter)
 				if err != nil {
 					fmt.Println(err.Error())
