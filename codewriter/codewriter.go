@@ -442,6 +442,96 @@ func (c *CodeWriter) WriteIf(label string) {
 	c.writer.WriteString(code)
 }
 
+// WriteReturn writes assembly code that effects the return command.
+func (c *CodeWriter) WriteReturn() {
+	// FRAME = LCL
+	code := "@LCL\n" +
+		"D=M\n" +
+		"@R13\n" +
+		"M=D\n" +
+		"D=M\n"
+
+	// RET = *(FRAME-5)
+	code += "@5\n" +
+		"A=D-A\n" +
+		"D=M\n" +
+		"@R14\n" +
+		"M=D\n"
+
+	// *ARG = pop()
+	code += "@SP\n" +
+		"M=M-1\n" +
+		"A=M\n" +
+		"D=M\n" +
+		"@ARG\n" +
+		"A=M\n" +
+		"M=D\n"
+
+	// SP = ARG+1
+	code += "@ARG\n" +
+		"D=M+1\n" +
+		"@SP\n" +
+		"M=D\n"
+
+	// THAT = *(FRAME-1)
+	code += "@R13\n" +
+		"A=M-1\n" +
+		"D=M\n" +
+		"@THAT\n" +
+		"M=D\n"
+
+	// THIS = *(FRAME-2)
+	code += "@2\n" +
+		"D=A\n" +
+		"@R13\n" +
+		"A=M-D\n" +
+		"D=M\n" +
+		"@THIS\n" +
+		"M=D\n"
+
+	// ARG = *(FRAME-3)
+	code += "@3\n" +
+		"D=A\n" +
+		"@R13\n" +
+		"A=M-D\n" +
+		"D=M\n" +
+		"@ARG\n" +
+		"M=D\n"
+
+	// LCL = *(FRAME-4)
+	code += "@4\n" +
+		"D=A\n" +
+		"@R13\n" +
+		"A=M-D\n" +
+		"D=M\n" +
+		"@LCL\n" +
+		"M=D\n"
+
+	// goto RET
+	code += "@R14\n" +
+		"A=M\n" +
+		"0;JMP\n"
+
+	c.writer.WriteString(code)
+}
+
+// WriteFunction writes assembly code that effects the function command.
+func (c *CodeWriter) WriteFunction(functionName string, numLocals int) {
+	c.SetFunctionName(functionName)
+
+	code := fmt.Sprintf("(%s)\n", c.functionName)
+
+	for i := 0; i < numLocals; i++ {
+		code += "@SP\n" +
+			"A=M\n" +
+			"M=0\n" +
+			"@SP\n" +
+			"M=M+1\n"
+	}
+
+	c.writer.WriteString(code)
+}
+
 // Save writes the output to file.
 func (c *CodeWriter) Save() {
 	f, err := os.Create(c.filename)

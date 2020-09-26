@@ -2,6 +2,7 @@ package codewriter
 
 import (
 	"path"
+	"strings"
 	"testing"
 
 	"github.com/sato11/the-hack-vm-translator/parser"
@@ -148,6 +149,90 @@ func TestWriteIf(t *testing.T) {
 		c := New()
 		c.SetFunctionName(test.functionName)
 		c.WriteIf(test.label)
+		if c.writer.String() != test.out {
+			t.Errorf("#%d: got: %v wanted: %v", i, c.writer.String(), test.out)
+		}
+	}
+}
+
+func TestWriteReturn(t *testing.T) {
+	c := New()
+	c.WriteReturn()
+
+	actual := c.writer.String()
+	expected := strings.Join([]string{
+		"@LCL",
+		"D=M",
+		"@R13",
+		"M=D",
+		"D=M",
+		"@5",
+		"A=D-A",
+		"D=M",
+		"@R14",
+		"M=D",
+		"@SP",
+		"M=M-1",
+		"A=M",
+		"D=M",
+		"@ARG",
+		"A=M",
+		"M=D",
+		"@ARG",
+		"D=M+1",
+		"@SP",
+		"M=D",
+		"@R13",
+		"A=M-1",
+		"D=M",
+		"@THAT",
+		"M=D",
+		"@2",
+		"D=A",
+		"@R13",
+		"A=M-D",
+		"D=M",
+		"@THIS",
+		"M=D",
+		"@3",
+		"D=A",
+		"@R13",
+		"A=M-D",
+		"D=M",
+		"@ARG",
+		"M=D",
+		"@4",
+		"D=A",
+		"@R13",
+		"A=M-D",
+		"D=M",
+		"@LCL",
+		"M=D",
+		"@R14",
+		"A=M",
+		"0;JMP",
+	}, "\n") + "\n"
+
+	if actual != expected {
+		t.Errorf("got: %v wanted: %v", actual, expected)
+	}
+}
+
+type functionCallTest struct {
+	functionName string
+	numLocals    int
+	out          string
+}
+
+func TestWriteFunction(t *testing.T) {
+	tests := []functionCallTest{
+		{"Sqrt", 1, "(Sqrt)\n@SP\nA=M\nM=0\n@SP\nM=M+1\n"},
+		{"Power", 2, "(Power)\n@SP\nA=M\nM=0\n@SP\nM=M+1\n@SP\nA=M\nM=0\n@SP\nM=M+1\n"},
+	}
+
+	for i, test := range tests {
+		c := New()
+		c.WriteFunction(test.functionName, test.numLocals)
 		if c.writer.String() != test.out {
 			t.Errorf("#%d: got: %v wanted: %v", i, c.writer.String(), test.out)
 		}

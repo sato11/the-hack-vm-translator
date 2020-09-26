@@ -41,6 +41,14 @@ func translateFile(path string, w *codewriter.CodeWriter) error {
 			w.WriteGoto(p.Arg1())
 		case parser.IfCommand:
 			w.WriteIf(p.Arg1())
+		case parser.ReturnCommand:
+			w.WriteReturn()
+		case parser.FunctionCommand:
+			numLocals, err := strconv.Atoi(p.Arg2())
+			if err != nil {
+				return err
+			}
+			w.WriteFunction(p.Arg1(), numLocals)
 		}
 	}
 
