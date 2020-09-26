@@ -62,15 +62,17 @@ func main() {
 	codewriter := codewriter.New()
 
 	extension := filepath.Ext(path)
-	codewriter.SetFileName(fmt.Sprintf("%s.asm", strings.TrimSuffix(path, extension)))
 
 	if extension == ".vm" {
+		codewriter.SetFileName(fmt.Sprintf("%s.asm", strings.TrimSuffix(path, extension)))
 		err := translateFile(path, codewriter)
 		if err != nil {
 			fmt.Println(err.Error())
 			os.Exit(ExitCodeError)
 		}
 	} else {
+		filename := filepath.Join(fmt.Sprintf("%s", path), fmt.Sprintf("%s.asm", path))
+		codewriter.SetFileName(filename)
 		err := filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
 			if filepath.Ext(path) == ".vm" {
 				err := translateFile(path, codewriter)
